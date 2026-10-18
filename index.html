@@ -1,0 +1,431 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#10131d">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop stop-color='%23aa9dff'/%3E%3Cstop offset='1' stop-color='%23705cf0'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='48' height='48' rx='12' fill='url(%23g)'/%3E%3Cpath d='M13 7h13l9 9v25H13a3 3 0 0 1-3-3V10a3 3 0 0 1 3-3Z' fill='none' stroke='white' stroke-width='3' stroke-linejoin='round'/%3E%3Cpath d='M26 8v10h10M17 27h14M17 34h14' fill='none' stroke='white' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+  <title>HTML → PDF</title>
+  <script src="https://cdn.jsdelivr.net/npm/html2pdf.js@0.10.1/dist/html2pdf.bundle.min.js" crossorigin="anonymous" defer></script>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #10131d;
+      --panel: #191d29;
+      --panel-2: #202535;
+      --panel-3: #141722;
+      --preview-stage: #242938;
+      --line: #30374b;
+      --ink: #f3f4f8;
+      --muted: #a2a9bb;
+      --subtle-ink: #d7dbea;
+      --button-ink: #e2e5ef;
+      --editor-ink: #e6e8f0;
+      --note-ink: #dedaff;
+      --purple-ink: #b3aaff;
+      --step-ink: #c5bdff;
+      --hover-bg: #292e40;
+      --hover-line: #686080;
+      --error-ink: #ff9696;
+      --warning-ink: #ffd389;
+      --topbar: rgba(16, 19, 29, .92);
+      --topbar-line: rgba(255,255,255,.08);
+      --shadow: rgba(0,0,0,.14);
+      --field-shadow: rgba(0,0,0,.25);
+      --accent: #9a8cff;
+      --accent-strong: #7563f2;
+      --green: #8ee0bd;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-synthesis: none;
+      text-rendering: optimizeLegibility;
+    }
+
+    :root[data-theme="light"] {
+      color-scheme: light;
+      --bg: #f7f6ff;
+      --panel: #ffffff;
+      --panel-2: #f0edff;
+      --panel-3: #fbfaff;
+      --preview-stage: #e8e4f6;
+      --line: #ded9ef;
+      --ink: #25213a;
+      --muted: #6f6a82;
+      --subtle-ink: #514b68;
+      --button-ink: #40395e;
+      --editor-ink: #302a47;
+      --note-ink: #514385;
+      --purple-ink: #6046d8;
+      --step-ink: #6046d8;
+      --hover-bg: #e7e2f8;
+      --hover-line: #aa9bd6;
+      --error-ink: #b42332;
+      --warning-ink: #8a5b00;
+      --topbar: rgba(255, 255, 255, .92);
+      --topbar-line: rgba(37, 33, 58, .1);
+      --shadow: rgba(48,35,95,.08);
+      --field-shadow: rgba(35,27,69,.16);
+      --green: #16825f;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      min-width: 320px;
+      min-height: 100vh;
+      margin: 0;
+      background: var(--bg);
+      color: var(--ink);
+    }
+
+    button, input, select, textarea { font: inherit; }
+    button { color: inherit; }
+
+    .app-shell { min-height: 100vh; display: flex; flex-direction: column; }
+
+    .topbar {
+      min-height: 76px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      padding: 14px clamp(18px, 4vw, 52px);
+      border-bottom: 1px solid var(--topbar-line);
+      background: var(--topbar);
+    }
+
+    .brand { display: flex; align-items: center; gap: 12px; }
+    .brand-mark {
+      width: 38px;
+      height: 38px;
+      display: grid;
+      place-items: center;
+      border: 1px solid rgba(255,255,255,.18);
+      border-radius: 12px;
+      background: linear-gradient(145deg, #aa9dff, #705cf0);
+      color: white;
+      box-shadow: 0 6px 22px rgba(117,99,242,.24);
+    }
+    .brand-mark svg { width: 22px; height: 22px; }
+    .brand-name { font-size: 15px; font-weight: 750; letter-spacing: -.025em; }
+    .brand-caption { margin-top: 2px; color: var(--muted); font-size: 11px; }
+    .topbar-actions { display: flex; align-items: center; gap: 12px; }
+    .local-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 11px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      color: var(--subtle-ink);
+      font-size: 12px;
+      white-space: nowrap;
+    }
+    .local-badge::before {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--green);
+      content: "";
+      box-shadow: 0 0 10px rgba(142,224,189,.7);
+    }
+
+    main { width: min(80%, 2400px); margin: 0 auto; padding: 34px clamp(18px, 3vw, 44px) 28px; flex: 1; }
+    .intro { margin-bottom: 23px; }
+    .eyebrow { margin: 0 0 8px; color: var(--purple-ink); font-size: 11px; font-weight: 750; letter-spacing: .13em; text-transform: uppercase; }
+    h1 { margin: 0; font-size: clamp(25px, 4vw, 36px); letter-spacing: -.05em; line-height: 1.1; }
+    .intro-copy { max-width: 700px; margin: 10px 0 0; color: var(--muted); font-size: 14px; line-height: 1.6; }
+
+    .workspace {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 18px;
+      min-height: min(80vh, 900px);
+    }
+
+    .card {
+      display: flex;
+      min-width: 0;
+      flex-direction: column;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: var(--panel);
+      box-shadow: 0 14px 40px var(--shadow);
+    }
+
+    .card-header {
+      min-height: 58px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--line);
+    }
+    .card-heading { display: flex; align-items: center; gap: 9px; font-size: 13px; font-weight: 700; }
+    .card-heading .step {
+      display: grid;
+      width: 24px;
+      height: 24px;
+      place-items: center;
+      border-radius: 8px;
+      background: rgba(154,140,255,.14);
+      color: var(--step-ink);
+      font-size: 11px;
+    }
+    .subtle { color: var(--muted); font-size: 11px; }
+    .editor-tools { display: flex; align-items: center; gap: 7px; }
+
+    .button {
+      min-height: 34px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      padding: 7px 11px;
+      border: 1px solid var(--line);
+      border-radius: 9px;
+      background: var(--panel-2);
+      color: var(--button-ink);
+      cursor: pointer;
+      font-size: 11px;
+      font-weight: 650;
+      transition: background .15s ease, border-color .15s ease, transform .15s ease;
+    }
+    .button:hover:not(:disabled) { border-color: var(--hover-line); background: var(--hover-bg); }
+    .button:active:not(:disabled) { transform: translateY(1px); }
+    .button:focus-visible, select:focus-visible, input:focus-visible, textarea:focus-visible {
+      outline: 2px solid #aa9dff;
+      outline-offset: 2px;
+    }
+    .button:disabled { cursor: wait; opacity: .65; }
+    .button.primary {
+      min-height: 42px;
+      padding: 10px 16px;
+      border-color: var(--accent-strong);
+      background: linear-gradient(135deg, #8e7cff, #6f5ce9);
+      color: #fff;
+      font-size: 12px;
+      box-shadow: 0 8px 20px rgba(117,99,242,.2);
+    }
+    .button.primary:hover:not(:disabled) { border-color: #b5aaff; background: linear-gradient(135deg, #a294ff, #806df4); }
+    .button.text-button { min-height: 30px; padding: 5px 8px; background: transparent; }
+
+    .editor {
+      width: 100%;
+      min-height: 475px;
+      flex: 1;
+      padding: 17px;
+      border: 0;
+      border-radius: 0;
+      outline: none;
+      background: var(--panel-3);
+      color: var(--editor-ink);
+      font-family: "Cascadia Code", "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+      font-size: 12px;
+      line-height: 1.65;
+      resize: vertical;
+      tab-size: 2;
+    }
+    .editor::placeholder { color: #747c90; }
+
+    .editor-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 9px 14px;
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 10px;
+    }
+    .editor-footer kbd {
+      padding: 2px 5px;
+      border: 1px solid var(--line);
+      border-radius: 4px;
+      background: var(--panel-2);
+      color: var(--button-ink);
+      font: inherit;
+    }
+
+    .preview-card { min-height: 0; }
+    .preview-info { display: flex; align-items: center; gap: 7px; color: var(--muted); font-size: 10px; }
+    .preview-info span { color: var(--green); font-size: 13px; }
+    .preview-stage {
+      min-height: 0;
+      display: flex;
+      flex: 1;
+      align-items: flex-start;
+      justify-content: center;
+      overflow: auto;
+      padding: 25px 20px;
+      background-color: var(--preview-stage);
+    }
+    #preview {
+      width: 100%;
+      min-height: 100%;
+      flex: 1;
+      border: 0;
+      border-radius: 3px;
+      background: white;
+      box-shadow: 0 5px 22px var(--field-shadow);
+    }
+
+    .export-card { margin-top: 18px; }
+    .export-content { padding: 16px; }
+    .settings { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; align-items: end; }
+    .field { width: 80%; min-width: 0; }
+    .field label { display: block; margin-bottom: 6px; color: var(--subtle-ink); font-size: 10px; font-weight: 650; }
+    .field input {
+      width: 100%;
+      height: 36px;
+      padding: 0 10px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel-3);
+      color: var(--ink);
+      font-size: 11px;
+    }
+    .export-actions {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      margin-top: 15px;
+      padding-top: 14px;
+      border-top: 1px solid var(--line);
+    }
+    .color-note { display: flex; align-items: flex-start; gap: 8px; color: var(--muted); font-size: 10px; line-height: 1.5; }
+    .color-note strong { color: var(--note-ink); }
+    .color-icon { color: var(--purple-ink); font-size: 14px; }
+    .status {
+      min-height: 19px;
+      margin-top: 10px;
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.5;
+    }
+    .status[data-kind="success"] { color: var(--green); }
+    .status[data-kind="error"] { color: var(--error-ink); }
+    .status[data-kind="warning"] { color: var(--warning-ink); }
+
+    .footer { padding: 0 clamp(18px, 4vw, 52px) 22px; color: var(--muted); text-align: center; font-size: 10px; }
+    .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
+
+    @media (max-width: 900px) {
+      main { width: 100%; padding-top: 26px; }
+      .workspace { grid-template-columns: 1fr; min-height: 0; }
+      .preview-card { min-height: 500px; }
+      .editor { min-height: 390px; }
+    }
+    @media (max-width: 620px) {
+      .topbar { min-height: 66px; }
+      .topbar-actions { gap: 0; }
+      .local-badge { display: none; }
+      .brand-caption { display: none; }
+      main { padding-top: 22px; }
+      .intro-copy { font-size: 13px; }
+      .card-header { padding: 11px; }
+      .subtle { display: none; }
+      .editor-tools { gap: 4px; }
+      .button { padding: 6px 8px; }
+      .preview-stage { padding: 14px 10px; }
+      .export-actions { align-items: stretch; flex-direction: column; }
+      .button.primary { width: 100%; }
+      .footer { padding-bottom: 16px; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M6.5 2.75h7l4.75 4.75v13.75H6.5a2 2 0 0 1-2-2V4.75a2 2 0 0 1 2-2Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/>
+            <path d="M13.25 2.9v5h5M8.25 13h7.5M8.25 16.5h7.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <div>
+          <div class="brand-name">HTML → PDF</div>
+          <div class="brand-caption">HTML to PDF, right in your browser</div>
+        </div>
+      </div>
+      <div class="topbar-actions">
+        <button class="button" id="themeToggle" type="button" aria-label="Switch to light mode">
+          <span id="themeIcon" aria-hidden="true">☼</span>
+          <span id="themeLabel">Light mode</span>
+        </button>
+        <div class="local-badge">Your document stays on this device</div>
+      </div>
+    </header>
+
+    <main>
+      <section class="intro" aria-labelledby="page-title">
+        <p class="eyebrow">A better way to print the web</p>
+        <h1 id="page-title">HTML in. PDF out.</h1>
+        <p class="intro-copy">Paste HTML, preview the rendered page, then download a crisp, full-color PDF. Your code is processed locally in this browser.</p>
+      </section>
+
+      <section class="workspace" aria-label="HTML editor and live preview">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-heading"><span class="step">01</span> Your HTML</div>
+            <div class="editor-tools">
+              <button class="button text-button" id="openFileButton" type="button" title="Open an HTML file">↑ <span class="desktop-label">Open file</span></button>
+              <button class="button text-button" id="sampleButton" type="button" title="Load a colorful example">Sample</button>
+              <button class="button text-button" id="clearButton" type="button" title="Clear the editor">Clear</button>
+              <input class="sr-only" id="fileInput" type="file" accept=".html,.htm,text/html">
+            </div>
+          </div>
+          <label class="sr-only" for="htmlInput">HTML source code</label>
+          <textarea class="editor" id="htmlInput" spellcheck="false" autocapitalize="off" autocomplete="off" aria-label="HTML source code"></textarea>
+          <div class="editor-footer">
+            <span>Static HTML + CSS; scripts are blocked for safety</span>
+            <span><kbd>Ctrl</kbd> + <kbd>Enter</kbd> to export</span>
+          </div>
+        </div>
+
+        <div class="card preview-card">
+          <div class="card-header">
+            <div class="card-heading"><span class="step">02</span> Live preview</div>
+            <div class="preview-info"><span aria-hidden="true">●</span> Updates as you type...</div>
+          </div>
+          <div class="preview-stage">
+            <iframe id="preview" title="Rendered HTML preview" sandbox="allow-same-origin"></iframe>
+          </div>
+        </div>
+      </section>
+
+      <section class="card export-card" aria-labelledby="export-heading">
+        <div class="card-header">
+          <div class="card-heading" id="export-heading"><span class="step">03</span> PDF settings</div>
+          <span class="subtle">A4 portrait · Choose a name and download</span>
+        </div>
+        <div class="export-content">
+          <div class="settings">
+            <div class="field">
+              <label for="fileName">File name</label>
+              <input id="fileName" type="text" value="my-document" maxlength="100" autocomplete="off">
+            </div>
+          </div>
+          <div class="export-actions">
+            <div class="color-note">
+              <span class="color-icon" aria-hidden="true">✦</span>
+              <span><strong>Color stays on.</strong> Background and text colors are preserved; external images need CORS or must be embedded.</span>
+            </div>
+            <button class="button primary" id="downloadButton" type="button">↓ &nbsp; Download PDF</button>
+          </div>
+          <div class="status" id="status" role="status" aria-live="polite"></div>
+        </div>
+      </section>
+    </main>
+    <footer class="footer">No account. No upload. Just HTML → PDF in your browser.</footer>
+  </div>
+
+  <script src="./app.js" defer></script>
+</body>
+</html>
