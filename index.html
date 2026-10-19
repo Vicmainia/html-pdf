@@ -275,10 +275,10 @@
 
     .export-card { margin-top: 18px; }
     .export-content { padding: 16px; }
-    .settings { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; align-items: end; }
-    .field { width: 80%; min-width: 0; }
+    .settings { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; align-items: end; }
+    .field { width: 100%; min-width: 0; }
     .field label { display: block; margin-bottom: 6px; color: var(--subtle-ink); font-size: 10px; font-weight: 650; }
-    .field input {
+    .field input, .field select {
       width: 100%;
       height: 36px;
       padding: 0 10px;
@@ -412,6 +412,16 @@
             <div class="field">
               <label for="fileName">File name</label>
               <input id="fileName" type="text" value="my-document" maxlength="100" autocomplete="off">
+            </div>
+            <div class="field">
+              <label for="pdfFontScale">PDF font size</label>
+              <select id="pdfFontScale" aria-describedby="pdfFontScaleHint">
+                <option value="1">Original size (100%)</option>
+                <option value="1.1">Slightly larger (110%)</option>
+                <option value="1.25">Large (125%)</option>
+                <option value="1.5">Extra large (150%)</option>
+              </select>
+              <span class="sr-only" id="pdfFontScaleHint">Changes text size in the downloaded PDF only.</span>
             </div>
           </div>
           <div class="export-actions">

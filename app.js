@@ -161,6 +161,32 @@
       }
     }
 
+    function scaleDocumentFonts(doc, scale) {
+      if (scale === 1) return;
+
+      const elements = [doc.body, ...doc.body.querySelectorAll("*")];
+      const fontSizes = elements.map(element => {
+        const computed = doc.defaultView.getComputedStyle(element);
+        return {
+          element,
+          fontSize: Number.parseFloat(computed.fontSize),
+          lineHeight: computed.lineHeight
+        };
+      });
+
+      for (const { element, fontSize, lineHeight } of fontSizes) {
+        if (Number.isFinite(fontSize)) {
+          element.style.setProperty("font-size", `${fontSize * scale}px`, "important");
+        }
+        if (lineHeight.endsWith("px")) {
+          const lineHeightSize = Number.parseFloat(lineHeight);
+          if (Number.isFinite(lineHeightSize)) {
+            element.style.setProperty("line-height", `${lineHeightSize * scale}px`, "important");
+          }
+        }
+      }
+    }
+
     async function downloadPdf() {
       if (!htmlInput.value.trim()) {
         setStatus("Add some HTML first, or load the sample to try it out.", "error");
@@ -197,6 +223,8 @@
           throw new Error("The HTML document could not be read. Make sure it contains valid HTML.");
         }
         await waitForDocumentAssets(doc);
+        const fontScale = Number.parseFloat(document.getElementById("pdfFontScale").value);
+        scaleDocumentFonts(doc, fontScale);
         preserveComputedStyles(doc);
 
         const body = doc.body;
